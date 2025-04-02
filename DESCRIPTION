@@ -1,4 +1,4 @@
-Package: MySpliceR
+Package: mySpliceR
 Type: Package
 Title: Mis-Splicing Detection Using Python Backend
 Version: 0.1.0
