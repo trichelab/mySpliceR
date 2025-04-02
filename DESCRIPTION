@@ -1,12 +1,20 @@
-Package: mySpliceR
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+## DESCRIPTION
+Package: MySpliceR
+Type: Package
+Title: Mis-Splicing Detection Using Python Backend
+Version: 0.1.0
+Authors@R: person("Your", "Name", email = "you@example.com", role = c("aut", "cre"))
+Description: An R wrapper around a Python-based splice junction detection engine.
+Depends: R (>= 4.1.0)
+Imports:
+    reticulate,
+    utils
+Suggests:
+    testthat
+SystemRequirements: Python (>= 3.7), samtools
 Encoding: UTF-8
+License: MIT
+LazyData: true
+biocViews: RNASeq, Splicing
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
