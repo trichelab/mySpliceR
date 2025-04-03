@@ -16,17 +16,24 @@ def parse_bam_list(bam_list_path):
                 bam_paths.setdefault(sample, {})['nochr'] = path
     return bam_paths
 
-
 def load_known_junctions(bed_file):
     known_junc = set()
     known_splice_sites = set()
     with open(bed_file) as f:
         for line in f:
-            chrom, start, end, annot = line.strip().split("\t")
-            parts = annot.split(":")
-            if parts[3].startswith("i"):
-                known_junc.add((chrom, int(start), int(end)))
-                known_splice_sites.update([(chrom, int(start)), (chrom, int(end))])
+            if line.startswith(("#", "track", "browser")) or not line.strip():
+                continue  # skip headers or empty lines
+
+            parts = line.strip().split("\t")
+            if len(parts) < 4:
+                continue  # skip malformed lines
+
+            chrom, start, end, annot = parts[:4]  # safely unpack first 4 columns
+            subparts = annot.split(":")
+            if len(subparts) >= 4 and subparts[3].startswith("i"):
+                start, end = int(start), int(end)
+                known_junc.add((chrom, start, end))
+                known_splice_sites.update([(chrom, start), (chrom, end)])
     return known_junc, known_splice_sites
 
 
