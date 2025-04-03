@@ -1,6 +1,6 @@
 # Updating the Python function to optionally return a DataFrame if no output path is provided.
 
-import pandas ad pd
+import pandas as pd
 
 def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
     bed_records = []
