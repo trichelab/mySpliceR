@@ -1,9 +1,10 @@
-# Updating the Python function to optionally return a DataFrame if no output path is provided.
-
+# Re-import necessary modules after kernel reset and redefine the updated function
 import pandas as pd
+from collections import defaultdict
 
 def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
-    bed_records = []
+    exon_records = defaultdict(list)
+
     with open(gtf_path, "r") as infile:
         for line in infile:
             if line.startswith("#"):
@@ -15,11 +16,10 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
             if feature != "exon":
                 continue
 
-            # GTF is 1-based, BED is 0-based
             start_bed = int(start) - 1
             end_bed = int(end)
 
-            # Parse attributes field
+            # Parse attributes
             attr_dict = {}
             for attr in attributes.strip().split(";"):
                 if attr.strip() == "":
@@ -33,16 +33,44 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
             transcript_id = attr_dict.get("transcript_id", "NA")
             exon_number = attr_dict.get("exon_number", "NA")
 
-            # Clean chr prefix if needed
             if not chrom.startswith("chr"):
                 chrom = "chr" + chrom
 
-            bed_name = f"{gene_name}:{transcript_id}:{strand}:e{exon_number}"
+            key = (gene_name, transcript_id, strand, chrom)
+            exon_records[key].append((int(start), int(end), exon_number))
 
-            bed_records.append([chrom, start_bed, end_bed, bed_name, ".", strand])
+    bed_output = []
 
-    # Create a DataFrame
-    bed_df = pd.DataFrame(bed_records, columns=["chrom", "start", "end", "name", "score", "strand"])
+    for (gene_name, transcript_id, strand, chrom), exons in exon_records.items():
+        # Sort exons by genomic position (strand-specific)
+        exons = sorted(exons, key=lambda x: x[0], reverse=(strand == "-"))
+
+        # Write exons
+        for i, (start, end, exon_number) in enumerate(exons):
+            bed_output.append([
+                chrom,
+                start - 1,
+                end,
+                f"{gene_name}:{transcript_id}:{strand}:e{exon_number}",
+                ".",
+                strand
+            ])
+
+        # Write introns (between exons)
+        for i in range(len(exons) - 1):
+            intron_start = exons[i][1]  # end of exon i
+            intron_end = exons[i + 1][0] - 1  # start of exon i+1 - 1
+            if intron_start < intron_end:  # valid intron
+                bed_output.append([
+                    chrom,
+                    intron_start,
+                    intron_end,
+                    f"{gene_name}:{transcript_id}:{strand}:i{i+1}",
+                    ".",
+                    strand
+                ])
+
+    bed_df = pd.DataFrame(bed_output, columns=["chrom", "start", "end", "name", "score", "strand"])
 
     if output_bed_path:
         bed_df.to_csv(output_bed_path, sep="\t", header=False, index=False)
