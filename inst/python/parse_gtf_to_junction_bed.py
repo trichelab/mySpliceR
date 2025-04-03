@@ -3,7 +3,7 @@
 import pandas as pd
 from collections import defaultdict
 
-def parse_gtf_to_junction_bed_with_introns(gtf_path, output_bed_path=None):
+def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
     exon_records = defaultdict(list)
 
     with open(gtf_path, "r") as infile:
