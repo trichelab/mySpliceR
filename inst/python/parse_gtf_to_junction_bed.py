@@ -1,9 +1,9 @@
+# Re-import necessary modules and redefine the corrected function after the kernel reset
+
 import pandas as pd
 from collections import defaultdict
 
-# Updated function to correctly apply BED 0-based, half-open convention for intron coordinates
-
-def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
+def parse_gtf_to_junction_bed_with_introns(gtf_path, output_bed_path=None):
     exon_records = defaultdict(list)
 
     with open(gtf_path, "r") as infile:
@@ -43,30 +43,37 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
     bed_output = []
 
     for (gene_name, transcript_id, strand, chrom), exons in exon_records.items():
-        # Sort exons by genomic position (strand-specific)
-        exons = sorted(exons, key=lambda x: x[0], reverse=(strand == "-"))
+        # Sort exons by genomic position (left to right)
+        exons_sorted = sorted(exons, key=lambda x: x[0])
 
-        # Write exons
-        for i, (start, end, exon_number) in enumerate(exons):
+        # Determine exon ordering for label based on strand
+        exon_order = list(range(1, len(exons_sorted) + 1))
+        if strand == "-":
+            exon_order = list(reversed(exon_order))
+
+        # Write exons with correct label order
+        for i, (start, end, _) in enumerate(exons_sorted):
             bed_output.append([
                 chrom,
                 start,
                 end,
-                f"{gene_name}:{transcript_id}:{strand}:e{exon_number}",
+                f"{gene_name}:{transcript_id}:{strand}:e{exon_order[i]}",
                 ".",
                 strand
             ])
 
-        # Write introns
-        for i in range(len(exons) - 1):
-            intron_start = exons[i][1]      # end of exon i (BED end)
-            intron_end = exons[i + 1][0]    # start of exon i+1 (BED start)
+        # Write introns between consecutive exons
+        for i in range(len(exons_sorted) - 1):
+            intron_start = exons_sorted[i][1]       # end of exon i
+            intron_end = exons_sorted[i + 1][0]     # start of exon i+1
             if intron_start < intron_end:
+                # Intron label should follow transcription order
+                intron_index = exon_order[i] if strand == "+" else exon_order[i + 1]
                 bed_output.append([
                     chrom,
                     intron_start,
                     intron_end,
-                    f"{gene_name}:{transcript_id}:{strand}:i{i+1}",
+                    f"{gene_name}:{transcript_id}:{strand}:i{intron_index}",
                     ".",
                     strand
                 ])
@@ -77,5 +84,4 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
         bed_df.to_csv(output_bed_path, sep="\t", header=False, index=False)
     else:
         return bed_df
-
 
