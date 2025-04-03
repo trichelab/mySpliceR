@@ -1,6 +1,7 @@
-# Re-import necessary modules after kernel reset and redefine the updated function
 import pandas as pd
 from collections import defaultdict
+
+# Updated function to correctly apply BED 0-based, half-open convention for intron coordinates
 
 def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
     exon_records = defaultdict(list)
@@ -16,8 +17,8 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
             if feature != "exon":
                 continue
 
-            start_bed = int(start) - 1
-            end_bed = int(end)
+            start_bed = int(start) - 1  # BED start
+            end_bed = int(end)          # BED end (exclusive)
 
             # Parse attributes
             attr_dict = {}
@@ -37,7 +38,7 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
                 chrom = "chr" + chrom
 
             key = (gene_name, transcript_id, strand, chrom)
-            exon_records[key].append((int(start), int(end), exon_number))
+            exon_records[key].append((start_bed, end_bed, exon_number))
 
     bed_output = []
 
@@ -49,18 +50,18 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
         for i, (start, end, exon_number) in enumerate(exons):
             bed_output.append([
                 chrom,
-                start - 1,
+                start,
                 end,
                 f"{gene_name}:{transcript_id}:{strand}:e{exon_number}",
                 ".",
                 strand
             ])
 
-        # Write introns (between exons)
+        # Write introns
         for i in range(len(exons) - 1):
-            intron_start = exons[i][1]  # end of exon i
-            intron_end = exons[i + 1][0] - 1  # start of exon i+1 - 1
-            if intron_start < intron_end:  # valid intron
+            intron_start = exons[i][1]      # end of exon i (BED end)
+            intron_end = exons[i + 1][0]    # start of exon i+1 (BED start)
+            if intron_start < intron_end:
                 bed_output.append([
                     chrom,
                     intron_start,
@@ -76,4 +77,5 @@ def parse_gtf_to_junction_bed(gtf_path, output_bed_path=None):
         bed_df.to_csv(output_bed_path, sep="\t", header=False, index=False)
     else:
         return bed_df
+
 
