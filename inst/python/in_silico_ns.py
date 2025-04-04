@@ -8,7 +8,7 @@ def parse_bam_list(bam_list_path):
         for line in f:
             parts = line.strip().split("\t")
             sample = parts[0]
-            path = parts[2]
+            path = os.path.expanduser(parts[2].strip())
             chrom_hint = parts[3]
             if "chr" in chrom_hint:
                 bam_paths.setdefault(sample, {})['chr'] = path
