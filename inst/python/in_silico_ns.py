@@ -1,6 +1,7 @@
 import os
 import pysam
 import csv
+import re
 
 def parse_bam_list(bam_list_path):
     bam_paths = {}
