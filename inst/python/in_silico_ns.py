@@ -1,9 +1,14 @@
+#!/usr/bin/env python
 import os
 import pysam
 import csv
 import re
 
 def parse_bam_list(bam_list_path):
+    """
+    Parses the BAM list file (TSV) and returns a dictionary mapping sample IDs to
+    a dictionary with keys 'chr' and/or 'nochr' for BAM paths.
+    """
     bam_paths = {}
     with open(bam_list_path) as f:
         for line in f:
@@ -18,6 +23,11 @@ def parse_bam_list(bam_list_path):
     return bam_paths
 
 def load_known_junctions(bed_file):
+    """
+    Load known junctions and splice sites from the BED file.
+    Assumes the BED file has at least 4 columns, where the 4th column
+    contains an annotation like ...:...:...:i1 (or i8, etc.).
+    """
     known_junc = set()
     known_splice_sites = set()
     with open(bed_file) as f:
