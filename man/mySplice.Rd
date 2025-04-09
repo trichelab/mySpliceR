@@ -4,7 +4,14 @@
 \alias{mySplice}
 \title{Detect mis-splicing events based on somatic mutations}
 \usage{
-mySplice(maf_file, bam_list, bed_file, output_file, min_reads = 5)
+mySplice(
+  maf_file,
+  bam_list,
+  bed_file,
+  output_file,
+  min_reads = 5,
+  return_granges = TRUE
+)
 }
 \arguments{
 \item{maf_file}{Path to the input MAF file}
@@ -16,6 +23,11 @@ mySplice(maf_file, bam_list, bed_file, output_file, min_reads = 5)
 \item{output_file}{Path to output result file}
 
 \item{min_reads}{Minimum number of supporting reads to report a novel junction (default 5)}
+
+\item{return_granges}{Logical; if TRUE, return result as a GRanges object with supporting reads in list-columns}
+}
+\value{
+If return_granges is TRUE, a GRanges object is returned; otherwise nothing is returned
 }
 \description{
 Detect mis-splicing events based on somatic mutations
