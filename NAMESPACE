@@ -3,6 +3,7 @@
 export(get_basic_MAF)
 export(install_python_dependencies)
 export(list_split_maf_files)
+export(merge_splice_with_vep)
 export(mySplice)
 export(parse_gtf_to_bed)
 export(split_maf)
