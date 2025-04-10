@@ -2,6 +2,7 @@
 
 export(filter_splice_exonic)
 export(get_basic_MAF)
+export(get_read_names_for_row)
 export(install_python_dependencies)
 export(list_split_maf_files)
 export(merge_splice_with_metadata_columns)
