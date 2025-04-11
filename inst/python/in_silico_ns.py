@@ -102,8 +102,8 @@ def detect_novel_junctions(maf_file, bam_list, bed_file, output_file, min_reads=
                     match = re.match(r"^(\d+)M(\d+)N(\d+)M$", cigar or "")
                     if match:
                         m1, n, m2 = map(int, match.groups())
-                        x = read.reference_start + m1 - 1
-                        y = read.reference_start + m1 + n - 2
+                        x = read.reference_start + m1      # intron start (0-based)
+                        y = read.reference_start + m1 + n  # intron end (0-based, exclusive)
                         if ((chrom, x, y) not in known_junc and
                             (y - x + 1 != dellen) and
                             read.reference_name == chrom and
